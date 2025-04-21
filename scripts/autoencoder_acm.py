@@ -30,30 +30,30 @@ class Autoencoder(nn.Module):
         
         # Encodeur
         self.encoder = nn.Sequential(
-            nn.Linear(input_dim, 128),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(128, 64),
+            nn.Linear(input_dim, 64),
             nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(64, 32),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(32, encoding_dim)
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(16, encoding_dim)
         )
         
         # Décodeur
         self.decoder = nn.Sequential(
-            nn.Linear(encoding_dim, 32),
+            nn.Linear(encoding_dim, 16),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(16, 32),
             nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(32, 64),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(64, 128),
-            nn.ReLU(),
-            nn.Dropout(0.2),
-            nn.Linear(128, input_dim),
+            nn.Linear(64, input_dim),
             nn.Sigmoid()
         )
     
@@ -80,7 +80,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # Entrainer l'autoencodeur
 print("\nEntrainement de l'autoencodeur...")
-epochs = 100
+epochs = 1000
 loss_history = []
 
 for epoch in range(epochs):
@@ -218,9 +218,15 @@ for name, row in modality_df.iterrows():
     plt.scatter(x, y, color=color, alpha=0.8, s=100)
     plt.annotate(f"{var_name}_{modality}", (x, y), fontsize=9, alpha=0.8)
 
-# Ajouter des légendes pour les axes
-plt.axhline(y=0, color='k', linestyle='-', alpha=0.3)
-plt.axvline(x=0, color='k', linestyle='-', alpha=0.3)
+# Configurer les limites des axes pour concentrer la vue sur les données
+x_min, x_max = modality_df['Dimension_1'].min(), modality_df['Dimension_1'].max()
+y_min, y_max = modality_df['Dimension_2'].min(), modality_df['Dimension_2'].max()
+# Ajouter 10% de marge autour des données
+x_margin = (x_max - x_min) * 0.1
+y_margin = (y_max - y_min) * 0.1
+plt.xlim(x_min - x_margin, x_max + x_margin)
+plt.ylim(y_min - y_margin, y_max + y_margin)
+
 plt.grid(True, linestyle='--', alpha=0.4)
 plt.xlabel('Dimension 1')
 plt.ylabel('Dimension 2')
